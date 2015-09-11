@@ -19,6 +19,31 @@ type GetImplemented interface {
 	Get(*http.Request) (int, interface{}, http.Header)
 }
 
+type PostImplemented interface {
+	Init(*http.Request) error
+	Post(*http.Request) (int, interface{}, http.Header)
+}
+
+type PutImplemented interface {
+	Init(*http.Request) error
+	Put(*http.Request) (int, interface{}, http.Header)
+}
+
+type DeleteImplemented interface {
+	Init(*http.Request) error
+	Delete(*http.Request) (int, interface{}, http.Header)
+}
+
+type HeadImplemented interface {
+	Init(*http.Request) error
+	Head(*http.Request) (int, interface{}, http.Header)
+}
+
+type PatchImplemented interface {
+	Init(*http.Request) error
+	Patch(*http.Request) (int, interface{}, http.Header)
+}
+
 type Resource struct {
 }
 
@@ -37,6 +62,31 @@ func (api *Resource) RequestHandler(resource interface{}) http.HandlerFunc {
 			if resource, ok := resource.(GetImplemented); ok {
 				init = resource.Init
 				handler = resource.Get
+			}
+		case POST:
+			if resource, ok := resource.(PostImplemented); ok {
+				init = resource.Init
+				handler = resource.Post
+			}
+		case PUT:
+			if resource, ok := resource.(PutImplemented); ok {
+				init = resource.Init
+				handler = resource.Put
+			}
+		case DELETE:
+			if resource, ok := resource.(DeleteImplemented); ok {
+				init = resource.Init
+				handler = resource.Delete
+			}
+		case HEAD:
+			if resource, ok := resource.(HeadImplemented); ok {
+				init = resource.Init
+				handler = resource.Head
+			}
+		case PATCH:
+			if resource, ok := resource.(PatchImplemented); ok {
+				init = resource.Init
+				handler = resource.Patch
 			}
 		}
 

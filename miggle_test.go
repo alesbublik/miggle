@@ -32,7 +32,7 @@ func TestBasicGet(t *testing.T) {
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	if string(body) != "{}" {
+	if string(body) != "data" {
 		t.Error("Not Equal")
 	}
 
