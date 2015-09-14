@@ -51,24 +51,34 @@ func TestBasicGet(t *testing.T) {
 		t.Error("Response body does not equal")
 	}
 
+	if header, ok := w.HeaderMap["Content-Type"]; ok {
+		if header[0] != "plain/text" {
+			t.Error("Response header Content-Type: %s does not exists", header[0])
+		}
+	} else {
+		t.Error("Response header Content-Type: does not exists", header[0])
+	}
 }
 
-type EndPointStatus struct{}
+type EndPointStatus struct {
+	Status int
+}
 
 func (this *EndPointStatus) Init(request *http.Request) error {
+	vars := mux.Vars(request)
+	if id, ok := vars["status"]; ok {
+		status, err := strconv.Atoi(id)
+
+		if err != nil {
+			return err
+		}
+		this.Status = status
+	}
 	return nil
 }
 
 func (this *EndPointStatus) Get(request *http.Request) (int, interface{}, http.Header) {
-	fmt.Println(request.RequestURI)
-	vars := mux.Vars(request)
-	status, err := strconv.Atoi(vars["status"])
-
-	if err != nil {
-		return 400, err, nil
-
-	}
-	return status, "data", nil
+	return this.Status, "data", http.Header{"Content-Type": {"application/json; charset=utf-8"}}
 }
 
 func TestAdvanceGet(t *testing.T) {
@@ -88,6 +98,14 @@ func TestAdvanceGet(t *testing.T) {
 
 		if string(body) != "data" {
 			t.Error("Response body does not equal")
+		}
+
+		if header, ok := w.HeaderMap["Content-Type"]; ok {
+			if header[0] != "application/json; charset=utf-8" {
+				t.Error("Response header Content-Type: %s does not exists", header[0])
+			}
+		} else {
+			t.Error("Response header Content-Type' does not exists", header)
 		}
 	}
 
