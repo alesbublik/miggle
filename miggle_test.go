@@ -2,13 +2,14 @@ package miggle
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
 
 func init() {
@@ -16,7 +17,7 @@ func init() {
 }
 
 func Router() *mux.Router {
-	var res *Resource = NewResource()
+	res := NewResource()
 	r := mux.NewRouter()
 
 	r.HandleFunc("/test", res.RequestHandler(new(EndPoint)))
@@ -25,6 +26,10 @@ func Router() *mux.Router {
 }
 
 type EndPoint struct{}
+
+func (this *EndPoint) NewRequest() HttpContextHandler {
+	return new(EndPoint)
+}
 
 func (this *EndPoint) Init(request *http.Request) error {
 	return nil
@@ -62,6 +67,10 @@ func TestBasicGet(t *testing.T) {
 
 type EndPointAdvance struct {
 	Status int
+}
+
+func (this *EndPointAdvance) NewRequest() HttpContextHandler {
+	return new(EndPointAdvance)
 }
 
 func (this *EndPointAdvance) Init(request *http.Request) error {

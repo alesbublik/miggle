@@ -14,33 +14,38 @@ const (
 	PATCH  = "PATCH"
 )
 
-type GetImplemented interface {
+type HttpContextHandler interface {
 	Init(*http.Request) error
+	NewRequest() HttpContextHandler
+}
+
+type GetImplemented interface {
+	HttpContextHandler
 	Get(*http.Request) (int, interface{}, http.Header)
 }
 
 type PostImplemented interface {
-	Init(*http.Request) error
+	HttpContextHandler
 	Post(*http.Request) (int, interface{}, http.Header)
 }
 
 type PutImplemented interface {
-	Init(*http.Request) error
+	HttpContextHandler
 	Put(*http.Request) (int, interface{}, http.Header)
 }
 
 type DeleteImplemented interface {
-	Init(*http.Request) error
+	HttpContextHandler
 	Delete(*http.Request) (int, interface{}, http.Header)
 }
 
 type HeadImplemented interface {
-	Init(*http.Request) error
+	HttpContextHandler
 	Head(*http.Request) (int, interface{}, http.Header)
 }
 
 type PatchImplemented interface {
-	Init(*http.Request) error
+	HttpContextHandler
 	Patch(*http.Request) (int, interface{}, http.Header)
 }
 
@@ -51,42 +56,43 @@ func NewResource() *Resource {
 	return &Resource{}
 }
 
-func (api *Resource) RequestHandler(resource interface{}) http.HandlerFunc {
+func (api *Resource) RequestHandler(resource HttpContextHandler) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
 		var handler func(*http.Request) (int, interface{}, http.Header)
 		var init func(*http.Request) error
+		var context HttpContextHandler = resource.NewRequest()
 
 		switch request.Method {
 		case GET:
-			if resource, ok := resource.(GetImplemented); ok {
-				init = resource.Init
-				handler = resource.Get
+			if context, ok := context.(GetImplemented); ok {
+				init = context.Init
+				handler = context.Get
 			}
 		case POST:
-			if resource, ok := resource.(PostImplemented); ok {
-				init = resource.Init
-				handler = resource.Post
+			if context, ok := context.(PostImplemented); ok {
+				init = context.Init
+				handler = context.Post
 			}
 		case PUT:
-			if resource, ok := resource.(PutImplemented); ok {
-				init = resource.Init
-				handler = resource.Put
+			if context, ok := context.(PutImplemented); ok {
+				init = context.Init
+				handler = context.Put
 			}
 		case DELETE:
-			if resource, ok := resource.(DeleteImplemented); ok {
-				init = resource.Init
-				handler = resource.Delete
+			if context, ok := context.(DeleteImplemented); ok {
+				init = context.Init
+				handler = context.Delete
 			}
 		case HEAD:
-			if resource, ok := resource.(HeadImplemented); ok {
-				init = resource.Init
-				handler = resource.Head
+			if context, ok := context.(HeadImplemented); ok {
+				init = context.Init
+				handler = context.Head
 			}
 		case PATCH:
-			if resource, ok := resource.(PatchImplemented); ok {
-				init = resource.Init
-				handler = resource.Patch
+			if context, ok := context.(PatchImplemented); ok {
+				init = context.Init
+				handler = context.Patch
 			}
 		}
 
